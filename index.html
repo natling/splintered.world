@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>splintered.world</title>
+  <meta charset="UTF-8">
+  <link rel="shortcut icon" href="files/favicon.png"/>
+  <style>
+    body {
+      margin: 0px;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: black;
+      image-rendering: pixelated;
+    }
+
+    div {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      mix-blend-mode: difference;
+      opacity: 0;
+      transition-property: background-position, opacity;
+    }
+  </style>
+</head>
+
+<body>
+</body>
+
+<script>
+  const randomIntegerInclusive = (min, max) => {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  const shuffleArray = array => {
+    for (let i = array.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var temp = array[i];
+      array[i] = array[j];
+      array[j] = temp;
+    }
+    return array;
+  }
+
+  const paths = [
+    '18fc4d371f750aa77e20206081ac1fb3',
+    'a-brief-interlude-of-self-loathing',
+    'at-fence',
+    'b5e685e242618f2b7c32f696a829e114',
+    'brittle-in-the-blackened-trees',
+    'chelsea',
+    'ding',
+    'e7c75f69dbb08f4a4bc05e44305d1786',
+    'fencate',
+    'i-have-been-illegally-transformed-into-a-yellow-flower',
+    'i-hear-my-footsteps-running-after-me-but-i-am-already-gone',
+    'if-you-please-we-will-commit-ourselves-to-this-void',
+    'noises-i-made-without-using-my-vocal-cords',
+    'please-make-those-annoying-sounds-quieter-or-turn-them-off',
+    'teleonomy',
+    'the-harvest-is-past-the-summer-is-ended',
+    'total-emotional-collapse-number-four',
+    'with-the-great-unconscious-gravity-of-a-girl',
+  ].map(file => 'files/spectrograms/' + file + '.png');
+
+  for (let i = 0; i < paths.length; i++) {
+    const image = new Image();
+    image.src = paths[i];
+
+    image.onload = () => {
+      const div = document.createElement('div');
+      document.body.appendChild(div);
+      div.style.backgroundImage = 'url(' + paths[i] + ')';
+
+      const scale = 3;
+      const [width, height] = [image.width, image.height].map(n => n * scale);
+      div.style.backgroundSize = [width, height].map(n => n + 'px').join(' ');
+
+      const range = {
+        x : image.width  * scale - window.innerWidth,
+        y : image.height * scale - window.innerHeight,
+      };
+
+      const setBackgroundPosition = position => {
+        div.style.backgroundPosition = [position.x, position.y].map(n => n + 'px').join(' ');
+      }
+
+      const getBackgroundPosition = () => {
+        const [x, y] = div.style.backgroundPosition.split(' ').map(n => parseInt(n));
+        return {x, y};
+      }
+
+      const move = () => {
+        if (! div.style.backgroundPosition) {
+          const [x, y] = [range.x, range.y].map(n => randomIntegerInclusive(0, -n));
+          setBackgroundPosition({x, y});
+          setTimeout(move, 100);
+        } else {
+          const origin      = getBackgroundPosition();
+          const destination = getBackgroundPosition();
+
+          const axis = Math.random() < 0.5;
+          destination[axis ? 'x' : 'y'] = randomIntegerInclusive(0, -[axis ? range.x : range.y]);
+
+          const delay = Math.abs(axis ? destination.x - origin.x : destination.y - origin.y) * 8;
+          div.style.transitionDuration = delay / 1000 + 's, 1s';
+          setBackgroundPosition(destination);
+          setTimeout(move, delay);
+        }
+      }
+
+      const zIndex = () => {
+        div.style.zIndex = randomIntegerInclusive(0, 8);
+        const delay = randomIntegerInclusive(2000, 8000);
+        setTimeout(zIndex, delay);
+      }
+
+      move();
+      zIndex();
+    }
+  }
+
+  const setOpacity = () => {
+    const layers = [...document.getElementsByTagName('div')];
+
+    if (layers.length == paths.length) {
+      shuffleArray(layers);
+      const n = randomIntegerInclusive(3, 6);
+      layers.forEach((layer, i) => layer.style.opacity = i < n ? 1 : 0);
+
+      const delay = randomIntegerInclusive(2000, 8000);
+      setTimeout(setOpacity, delay);
+    } else {
+      setTimeout(setOpacity, 100);
+    }
+  }
+
+  setOpacity();
+</script>
+
+</html>
