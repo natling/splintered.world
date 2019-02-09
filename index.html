@@ -20,8 +20,6 @@
       height: 100%;
       position: absolute;
       mix-blend-mode: difference;
-      opacity: 0;
-      transition-property: background-position, opacity;
     }
   </style>
 </head>
@@ -67,35 +65,48 @@
     'with-the-great-unconscious-gravity-of-a-girl',
   ].map(file => 'files/spectrograms/' + file + '.png');
 
-  for (let i = 0; i < paths.length; i++) {
-    const image = new Image();
-    image.src = paths[i];
+  const loadImage = path => {
+    return new Promise(resolve => {
+      const image = new Image();
+      image.src = path;
+      image.onload = () => resolve(image)
+    });
+  }
 
-    image.onload = () => {
-      const div = document.createElement('div');
-      document.body.appendChild(div);
-      div.style.backgroundImage = 'url(' + paths[i] + ')';
+  Promise.all(paths.map(loadImage)).then(images => {
+    const layers = images.map(image => {
+      const layer = {
+        transitions : {},
+      };
+
+      layer.div = document.createElement('div');
+      document.body.appendChild(layer.div);
+      layer.div.style.backgroundImage = 'url(' + image.src + ')';
 
       const scale = 3;
       const [width, height] = [image.width, image.height].map(n => n * scale);
-      div.style.backgroundSize = [width, height].map(n => n + 'px').join(' ');
+      layer.div.style.backgroundSize = [width, height].map(n => n + 'px').join(' ');
 
       const range = {
         x : image.width  * scale - window.innerWidth,
         y : image.height * scale - window.innerHeight,
       };
 
+      layer.setTransitions = () => {
+        layer.div.style.transition = Object.entries(layer.transitions).map(([key, value]) => key + ' ' + value + 's').join(', ');
+      }
+
       const setBackgroundPosition = position => {
-        div.style.backgroundPosition = [position.x, position.y].map(n => n + 'px').join(' ');
+        layer.div.style.backgroundPosition = [position.x, position.y].map(n => n + 'px').join(' ');
       }
 
       const getBackgroundPosition = () => {
-        const [x, y] = div.style.backgroundPosition.split(' ').map(n => parseInt(n));
+        const [x, y] = layer.div.style.backgroundPosition.split(' ').map(n => parseInt(n));
         return {x, y};
       }
 
       const move = () => {
-        if (! div.style.backgroundPosition) {
+        if (! layer.div.style.backgroundPosition) {
           const [x, y] = [range.x, range.y].map(n => randomIntegerInclusive(0, -n));
           setBackgroundPosition({x, y});
           setTimeout(move, 100);
@@ -107,39 +118,50 @@
           destination[axis ? 'x' : 'y'] = randomIntegerInclusive(0, -[axis ? range.x : range.y]);
 
           const delay = Math.abs(axis ? destination.x - origin.x : destination.y - origin.y) * 8;
-          div.style.transitionDuration = delay / 1000 + 's, 1s';
+          layer.transitions['background-position'] = delay / 1000;
+          layer.setTransitions();
           setBackgroundPosition(destination);
           setTimeout(move, delay);
         }
       }
 
       const zIndex = () => {
-        div.style.zIndex = randomIntegerInclusive(0, 8);
+        layer.div.style.zIndex = randomIntegerInclusive(0, 8);
         const delay = randomIntegerInclusive(2000, 8000);
         setTimeout(zIndex, delay);
       }
 
+      const filter = () => {
+        const delay = randomIntegerInclusive(2000, 8000);
+        layer.transitions.filter = delay / 1000;
+        layer.setTransitions();
+        layer.div.style.filter = 'hue-rotate(' + randomIntegerInclusive(0, 360) + 'deg)';
+        setTimeout(filter, delay);
+      }
+
       move();
       zIndex();
-    }
-  }
+      filter();
 
-  const setOpacity = () => {
-    const layers = [...document.getElementsByTagName('div')];
+      return layer;
+    });
 
-    if (layers.length == paths.length) {
-      shuffleArray(layers);
+    const setOpacity = () => {
       const n = randomIntegerInclusive(3, 6);
-      layers.forEach((layer, i) => layer.style.opacity = i < n ? 1 : 0);
-
       const delay = randomIntegerInclusive(2000, 8000);
-      setTimeout(setOpacity, delay);
-    } else {
-      setTimeout(setOpacity, 100);
-    }
-  }
+      shuffleArray(layers);
 
-  setOpacity();
+      layers.forEach((layer, i) => {
+        layer.transitions.opacity = delay / 1000 / 4;
+        layer.setTransitions();
+        layer.div.style.opacity = i < n ? 1 : 0;
+      });
+
+      setTimeout(setOpacity, delay);
+    }
+
+    setOpacity();
+  });
 </script>
 
 </html>
