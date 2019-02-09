@@ -5,6 +5,7 @@
   <title>splintered.world</title>
   <meta charset="UTF-8">
   <link rel="shortcut icon" href="files/favicon.png"/>
+  <link rel="stylesheet" type="text/css" href="files/loader.css">
   <style>
     body {
       margin: 0px;
@@ -26,6 +27,8 @@
 
 <body>
 </body>
+
+<script src="files/loader.js"></script>
 
 <script>
   const randomIntegerInclusive = (min, max) => {
@@ -74,6 +77,8 @@
   }
 
   Promise.all(paths.map(loadImage)).then(images => {
+    document.body.removeChild(container);
+
     const layers = images.map(image => {
       const layer = {
         transitions : {},
