@@ -37,10 +37,14 @@
     return Math.floor(Math.random() * (max - min + 1)) + min;
   }
 
+  const randomFloat = (min, max) => {
+    return Math.random() * (max - min) + min;
+  }
+
   const shuffleArray = array => {
     for (let i = array.length - 1; i > 0; i--) {
-      var j = Math.floor(Math.random() * (i + 1));
-      var temp = array[i];
+      const j = Math.floor(Math.random() * (i + 1));
+      const temp = array[i];
       array[i] = array[j];
       array[j] = temp;
     }
@@ -71,8 +75,8 @@
   const loadImage = path => {
     return new Promise(resolve => {
       const image = new Image();
-      image.src = path;
       image.onload = () => resolve(image)
+      image.src = path;
     });
   }
 
@@ -82,71 +86,78 @@
     const layers = images.map(image => {
       const layer = {
         transitions : {},
+        range       : {},
       };
 
       layer.div = document.createElement('div');
       document.body.appendChild(layer.div);
       layer.div.style.backgroundImage = 'url(' + image.src + ')';
 
-      const scale = 3;
-      const [width, height] = [image.width, image.height].map(n => n * scale);
-      layer.div.style.backgroundSize = [width, height].map(n => n + 'px').join(' ');
-
-      const range = {
-        x : image.width  * scale - window.innerWidth,
-        y : image.height * scale - window.innerHeight,
-      };
-
       layer.setTransitions = () => {
         layer.div.style.transition = Object.entries(layer.transitions).map(([key, value]) => key + ' ' + value + 's').join(', ');
       }
 
-      const setBackgroundPosition = position => {
+      layer.setBackgroundPosition = position => {
         layer.div.style.backgroundPosition = [position.x, position.y].map(n => n + 'px').join(' ');
       }
 
-      const getBackgroundPosition = () => {
+      layer.getBackgroundPosition = () => {
         const [x, y] = layer.div.style.backgroundPosition.split(' ').map(n => parseInt(n));
         return {x, y};
       }
 
-      const move = () => {
+      layer.zoom = () => {
+        const scale = randomFloat(0.1, 5);
+        const [width, height] = [image.width, image.height].map(n => n * scale);
+
+        layer.range.x = image.width  * scale - window.innerWidth;
+        layer.range.y = image.height * scale - window.innerHeight;
+
+        const delay = randomIntegerInclusive(2000, 8000);
+        layer.transitions['background-size'] = delay / 1000 / 4;
+        layer.setTransitions();
+        layer.div.style.backgroundSize = [width, height].map(n => n + 'px').join(' ');
+        setTimeout(layer.zoom, delay);
+      }
+
+      layer.move = () => {
         if (! layer.div.style.backgroundPosition) {
-          const [x, y] = [range.x, range.y].map(n => randomIntegerInclusive(0, -n));
-          setBackgroundPosition({x, y});
-          setTimeout(move, 100);
+          const [x, y] = [layer.range.x, layer.range.y].map(n => randomIntegerInclusive(0, -n));
+          layer.setBackgroundPosition({x, y});
+          setTimeout(layer.move, 100);
         } else {
-          const origin      = getBackgroundPosition();
-          const destination = getBackgroundPosition();
+          const origin      = layer.getBackgroundPosition();
+          const destination = layer.getBackgroundPosition();
 
           const axis = Math.random() < 0.5;
-          destination[axis ? 'x' : 'y'] = randomIntegerInclusive(0, -[axis ? range.x : range.y]);
+          destination[axis ? 'x' : 'y'] = randomIntegerInclusive(0, -[axis ? layer.range.x : layer.range.y]);
 
           const delay = Math.abs(axis ? destination.x - origin.x : destination.y - origin.y) * 8;
           layer.transitions['background-position'] = delay / 1000;
           layer.setTransitions();
-          setBackgroundPosition(destination);
-          setTimeout(move, delay);
+          layer.setBackgroundPosition(destination);
+          setTimeout(layer.move, delay);
         }
       }
 
-      const zIndex = () => {
+      layer.zIndex = () => {
         layer.div.style.zIndex = randomIntegerInclusive(0, 8);
         const delay = randomIntegerInclusive(2000, 8000);
-        setTimeout(zIndex, delay);
+        setTimeout(layer.zIndex, delay);
       }
 
-      const filter = () => {
+      layer.filter = () => {
         const delay = randomIntegerInclusive(2000, 8000);
         layer.transitions.filter = delay / 1000;
         layer.setTransitions();
         layer.div.style.filter = 'hue-rotate(' + randomIntegerInclusive(0, 360) + 'deg)';
-        setTimeout(filter, delay);
+        setTimeout(layer.filter, delay);
       }
 
-      move();
-      zIndex();
-      filter();
+      layer.zoom();
+      layer.move();
+      layer.zIndex();
+      layer.filter();
 
       return layer;
     });
