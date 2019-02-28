@@ -130,10 +130,10 @@
           const origin      = layer.getBackgroundPosition();
           const destination = layer.getBackgroundPosition();
 
-          const axis = Math.random() < 0.5;
-          destination[axis ? 'x' : 'y'] = -randomIntegerInclusive(0, axis ? layer.range.x : layer.range.y);
+          const axis = Math.random() < 0.5 ? 'x' : 'y';
+          destination[axis] = randomIntegerInclusive(0, -layer.range[axis]);
 
-          const delay = Math.abs(axis ? destination.x - origin.x : destination.y - origin.y) * 8;
+          const delay = Math.abs(destination[axis] - origin[axis]) * 8;
           layer.transitions['background-position'] = delay / 1000;
           layer.setTransitions();
           layer.setBackgroundPosition(destination);
