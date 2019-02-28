@@ -87,7 +87,6 @@
     const layers = images.map(image => {
       const layer = {
         transitions : {},
-        range       : {},
       };
 
       layer.div = document.createElement('div');
@@ -111,8 +110,10 @@
         const scale = randomFloat(0.1, 5);
         const [width, height] = [image.width, image.height].map(n => n * scale);
 
-        layer.range.x = image.width  * scale - window.innerWidth;
-        layer.range.y = image.height * scale - window.innerHeight;
+        layer.range = {
+          x : image.width  * scale - window.innerWidth,
+          y : image.height * scale - window.innerHeight,
+        };
 
         const delay = randomIntegerInclusive(2000, 8000);
         layer.transitions['background-size'] = delay / 1000 / 4;
