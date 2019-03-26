@@ -93,7 +93,7 @@
       layer.div.style.backgroundImage = 'url(' + image.src + ')';
 
       layer.setTransitions = () => {
-        layer.div.style.transition = Object.entries(layer.transitions).map(([key, value]) => key + ' ' + value + 's').join(', ');
+        layer.div.style.transition = Object.entries(layer.transitions).map(([property, duration]) => property + ' ' + duration + 's').join(', ');
       }
 
       layer.setBackgroundPosition = position => {
