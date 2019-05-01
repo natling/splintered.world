@@ -110,11 +110,8 @@
       layer.zoom = () => {
         const scale = randomFloat(0.1, 5);
         const [width, height] = [image.width, image.height].map(n => n * scale);
-
-        layer.range = {
-          x : image.width  * scale - window.innerWidth,
-          y : image.height * scale - window.innerHeight,
-        };
+        const [x, y] = [width - window.innerWidth, height - window.innerHeight];
+        layer.range = {x, y};
 
         const delay = randomIntegerInclusive(2000, 8000);
         layer.transitions['background-size'] = delay / 1000 / 4;
