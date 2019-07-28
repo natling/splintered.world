@@ -73,7 +73,7 @@
     'total-emotional-collapse-number-four',
     'tunafish-sandwich-piece',
     'with-the-great-unconscious-gravity-of-a-girl',
-  ].map(file => 'files/spectrograms/' + file + '.png');
+  ].map(file => `files/spectrograms/${file}.png`);
 
   const loadImage = path => {
     return new Promise(resolve => {
@@ -93,14 +93,14 @@
 
       layer.div = document.createElement('div');
       document.body.appendChild(layer.div);
-      layer.div.style.backgroundImage = 'url(' + image.src + ')';
+      layer.div.style.backgroundImage = `url(${image.src})`;
 
       layer.setTransitions = () => {
-        layer.div.style.transition = Object.entries(layer.transitions).map(([property, duration]) => property + ' ' + duration + 's').join(', ');
+        layer.div.style.transition = Object.entries(layer.transitions).map(([property, duration]) => `${property} ${duration}s`).join(', ');
       }
 
       layer.setBackgroundPosition = position => {
-        layer.div.style.backgroundPosition = [position.x, position.y].map(n => n + 'px').join(' ');
+        layer.div.style.backgroundPosition = [position.x, position.y].map(n => `${n}px`).join(' ');
       }
 
       layer.getBackgroundPosition = () => {
@@ -117,7 +117,7 @@
         const delay = randomIntegerInclusive(2000, 8000);
         layer.transitions['background-size'] = delay / 1000 / 4;
         layer.setTransitions();
-        layer.div.style.backgroundSize = [width, height].map(n => n + 'px').join(' ');
+        layer.div.style.backgroundSize = [width, height].map(n => `${n}px`).join(' ');
         setTimeout(layer.zoom, delay);
       }
 
@@ -151,7 +151,7 @@
         const delay = randomIntegerInclusive(2000, 8000);
         layer.transitions.filter = delay / 1000;
         layer.setTransitions();
-        layer.div.style.filter = 'hue-rotate(' + randomIntegerInclusive(0, 360) + 'deg)';
+        layer.div.style.filter = `hue-rotate(${randomIntegerInclusive(0, 360)}deg)`;
         setTimeout(layer.filter, delay);
       }
 
