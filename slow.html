@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>splintered.world</title>
+  <meta charset="UTF-8">
+  <link rel="shortcut icon" href="files/favicon.png"/>
+  <link rel="stylesheet" type="text/css" href="files/loader.css">
+  <link rel="stylesheet" type="text/css" href="files/filter-slow.css">
+  <style>
+    body {
+      margin: 0px;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: black;
+      image-rendering: pixelated;
+    }
+
+    div {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      mix-blend-mode: difference;
+      transition-timing-function: linear;
+    }
+  </style>
+</head>
+
+<body>
+</body>
+
+<script src="files/loader.js"></script>
+
+<script>
+  const randomIntegerInclusive = (min, max) => {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  const randomFloat = (min, max) => {
+    return Math.random() * (max - min) + min;
+  }
+
+  const shuffleArray = array => {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+  }
+
+  const paths = [
+    '18fc4d371f750aa77e20206081ac1fb3',
+    'a-brief-interlude-of-self-loathing',
+    'at-fence',
+    'b5e685e242618f2b7c32f696a829e114',
+    'be-not-afraid-my-servant-jacob',
+    'brittle-in-the-blackened-trees',
+    'chelsea',
+    'ding',
+    'e7c75f69dbb08f4a4bc05e44305d1786',
+    'fencate',
+    'hame',
+    'i-have-been-illegally-transformed-into-a-yellow-flower',
+    'i-hear-my-footsteps-running-after-me-but-i-am-already-gone',
+    'i-love-you-into-the-sea',
+    'i-wish-i-could-breathe-like-you',
+    'if-you-please-we-will-commit-ourselves-to-this-void',
+    'jordans-pocket',
+    'noises-i-made-without-using-my-vocal-cords',
+    'please-make-those-annoying-sounds-quieter-or-turn-them-off',
+    'teleonomy',
+    'the-harvest-is-past-the-summer-is-ended',
+    'total-emotional-collapse-number-four',
+    'tunafish-sandwich-piece',
+    'with-the-great-unconscious-gravity-of-a-girl',
+  ].map(file => `files/spectrograms/${file}.png`);
+
+  const loadImage = path => {
+    return new Promise(resolve => {
+      const image = new Image();
+      image.onload = () => resolve(image)
+      image.src = path;
+    });
+  }
+
+  Promise.all(paths.map(loadImage)).then(images => {
+    document.body.removeChild(container);
+
+    const layers = images.map(image => {
+      const layer = {
+        transitions : {},
+      };
+
+      layer.div = document.createElement('div');
+      document.body.appendChild(layer.div);
+      layer.div.style.backgroundImage = `url(${image.src})`;
+
+      layer.setTransitions = () => {
+        layer.div.style.transition = Object.entries(layer.transitions).map(([property, duration]) => `${property} ${duration}s`).join(', ');
+      }
+
+      layer.setBackgroundPosition = position => {
+        layer.div.style.backgroundPosition = [position.x, position.y].map(n => `${n}px`).join(' ');
+      }
+
+      layer.getBackgroundPosition = () => {
+        const [x, y] = layer.div.style.backgroundPosition.split(' ').map(n => parseInt(n));
+        return {x, y};
+      }
+
+      layer.zoom = () => {
+        const scale = randomFloat(0.1, 5);
+        const [width, height] = [image.width, image.height].map(n => n * scale);
+        const [x, y] = [width - window.innerWidth, height - window.innerHeight];
+        layer.range = {x, y};
+
+        const delay = randomIntegerInclusive(20000, 80000);
+        layer.transitions['background-size'] = delay / 1000 / 4;
+        layer.setTransitions();
+        layer.div.style.backgroundSize = [width, height].map(n => `${n}px`).join(' ');
+        setTimeout(layer.zoom, delay);
+      }
+
+      layer.move = () => {
+        if (! layer.div.style.backgroundPosition) {
+          const [x, y] = [layer.range.x, layer.range.y].map(n => randomIntegerInclusive(0, -n));
+          layer.setBackgroundPosition({x, y});
+          setTimeout(layer.move, 100);
+        } else {
+          const origin      = layer.getBackgroundPosition();
+          const destination = layer.getBackgroundPosition();
+
+          const axis = Math.random() < 0.5 ? 'x' : 'y';
+          destination[axis] = randomIntegerInclusive(0, -layer.range[axis]);
+
+          const delay = Math.abs(destination[axis] - origin[axis]) * 16;
+          layer.transitions['background-position'] = delay / 1000;
+          layer.setTransitions();
+          layer.setBackgroundPosition(destination);
+          setTimeout(layer.move, delay);
+        }
+      }
+
+      layer.zIndex = () => {
+        layer.div.style.zIndex = randomIntegerInclusive(0, 8);
+        const delay = randomIntegerInclusive(20000, 80000);
+        setTimeout(layer.zIndex, delay);
+      }
+
+      layer.filter = () => {
+        const delay = randomIntegerInclusive(20000, 80000);
+        layer.transitions.filter = delay / 1000;
+        layer.setTransitions();
+        layer.div.style.filter = `hue-rotate(${randomIntegerInclusive(0, 360)}deg)`;
+        setTimeout(layer.filter, delay);
+      }
+
+      layer.zoom();
+      layer.move();
+      layer.zIndex();
+      layer.filter();
+
+      return layer;
+    });
+
+    const setOpacity = () => {
+      const n = randomIntegerInclusive(3, 6);
+      const delay = randomIntegerInclusive(20000, 80000);
+      shuffleArray(layers);
+
+      layers.forEach((layer, i) => {
+        layer.transitions.opacity = delay / 1000 / 4;
+        layer.setTransitions();
+        layer.div.style.opacity = i < n ? 1 : 0;
+      });
+
+      setTimeout(setOpacity, delay);
+    }
+
+    setOpacity();
+  });
+</script>
+
+</html>

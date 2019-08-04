@@ -1,0 +1,12 @@
+body {
+	animation: filter 60s linear infinite alternate;
+}
+
+@keyframes filter {
+	  0% { filter: contrast(  0%) saturate(  0%); }
+	 10% { filter: contrast(100%) saturate(  0%); }
+	 20% { filter: contrast(800%) saturate(  0%); }
+	 50% { filter: contrast(100%) saturate(100%); }
+	 80% { filter: contrast(100%) saturate(100%); }
+	100% { filter: contrast(800%) saturate(100%); }
+}
